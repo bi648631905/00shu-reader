@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>00小说网</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f0f14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="00小说网">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f0f14;--bg2:#1a1a24;--bg3:#222230;--text:#c8c8d4;--text2:#8888a0;--accent:#5b8def;--accent2:#7b9ff7;--border:#2a2a3a;--green:#4caf84;--yellow:#d4a843}
+body{font:16px/1.6 "Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:var(--accent);text-decoration:none}
+button,input,select{font-family:inherit;font-size:.95rem;outline:none}
+button{cursor:pointer;background:var(--accent);color:#fff;border:none;padding:8px 18px;border-radius:6px}
+button:active{background:var(--accent2)}
+button.dark{background:var(--bg3);color:var(--text2)}
+h2{font-size:1.1rem;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+
+/* Header */
+#topbar{background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+#topbar>div{max-width:1200px;margin:0 auto;display:flex;align-items:center;padding:8px 12px;gap:10px}
+.logo{font-size:1.2rem;font-weight:bold;color:#fff!important}
+#search-box{display:flex;flex:1;gap:0}
+#search-box input{flex:1;padding:7px 12px;border:1px solid var(--border);border-radius:6px 0 0 6px;background:var(--bg);color:var(--text)}
+#search-box button{padding:7px 14px;border-radius:0 6px 6px 0;font-size:.9rem}
+#nav-tabs{display:flex;gap:8px;font-size:.9rem}
+#nav-tabs a{color:var(--text)}
+
+/* Main container */
+#app{max-width:1200px;margin:0 auto;padding:16px}
+.view{display:none}
+.view.active{display:block}
+
+/* Home */
+.hot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.hot-card{background:var(--bg2);border-radius:10px;padding:14px;display:flex;gap:12px;border:1px solid var(--border);cursor:pointer}
+.hot-card:active{background:var(--bg3)}
+.hot-card img{width:72px;height:90px;object-fit:cover;border-radius:4px;background:var(--bg3);flex-shrink:0}
+.hot-card .info{min-width:0;flex:1}
+.hot-card h3{font-size:.95rem;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hot-card .author{color:var(--text2);font-size:.8rem}
+.hot-card .desc{color:var(--text2);font-size:.75rem;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+.book-list{list-style:none}
+.book-list li{padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;cursor:pointer}
+.book-list li:active{background:var(--bg2)}
+.book-list .s5{color:var(--text2);font-size:.8rem}
+
+/* Categories */
+.cat-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.cat-tab{padding:7px 14px;background:var(--bg2);border-radius:20px;color:var(--text);font-size:.85rem;border:1px solid var(--border);cursor:pointer}
+.cat-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px}
+.book-grid a{display:block;padding:8px 12px;background:var(--bg2);border-radius:6px;color:var(--text)!important;font-size:.85rem;border:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Search Results */
+.result-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.result-table th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);color:var(--text2);font-weight:normal}
+.result-table td{padding:8px 10px;border-bottom:1px solid var(--border)}
+.result-table tr:active{background:var(--bg2)}
+.result-table .tt{color:var(--accent)!important;font-weight:bold}
+.status-done{color:var(--green)} .status-ongoing{color:var(--yellow)}
+
+/* Book Detail */
+#book-meta{background:var(--bg2);border-radius:10px;padding:18px;margin-bottom:16px;display:flex;gap:16px;border:1px solid var(--border)}
+#book-meta img{width:100px;height:125px;object-fit:cover;border-radius:6px;background:var(--bg3);flex-shrink:0}
+#book-meta h1{font-size:1.2rem;margin-bottom:6px}
+#book-meta .meta{flex:1;min-width:0}
+#book-meta .meta p{font-size:.85rem;color:var(--text2);margin-bottom:2px}
+#book-meta .desc{margin-top:6px;font-size:.8rem;color:var(--text);line-height:1.5}
+
+.chapter-tool{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.chapter-tool input{flex:1;min-width:180px;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text)}
+.chapter-tool button{font-size:.85rem}
+#ch-count{font-size:.8rem;color:var(--text2);margin-bottom:8px}
+#ch-list{list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1px}
+#ch-list a{display:block;padding:7px 10px;border-radius:4px;color:var(--text)!important;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ch-list a:active{background:var(--bg2);color:#fff!important}
+
+/* Reader */
+#reader-tool{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:20px;position:sticky;top:52px;background:var(--bg);z-index:10;flex-wrap:wrap}
+#reader-tool select{padding:6px 10px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:.85rem}
+#reader-title{font-weight:bold;flex:1;min-width:120px;font-size:.9rem}
+#reader-content{max-width:800px;margin:0 auto;line-height:2.1;word-break:break-word;font-size:18px}
+
+/* Back link */
+.back{display:inline-block;color:var(--text2)!important;font-size:.85rem;margin-bottom:12px}
+.back:before{content:'\2190 '}
+
+/* Modal */
+.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center}
+.modal.show{display:flex}
+.modal-box{background:var(--bg2);padding:24px;border-radius:12px;min-width:300px;max-width:90vw;border:1px solid var(--border)}
+.modal-box h3{margin-bottom:14px}
+.modal-box label{display:block;margin:8px 0;font-size:.9rem}
+.modal-box input[type=radio]{margin-right:6px}
+.modal-box input[type=number]{width:70px;padding:4px 8px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;margin:0 4px}
+.modal-actions{display:flex;gap:10px;margin-top:16px}
+
+/* Loading */
+.loading{text-align:center;padding:40px;color:var(--text2)}
+.spin{display:inline-block;width:22px;height:22px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Toast */
+.toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:var(--bg3);color:#fff;padding:10px 24px;border-radius:20px;font-size:.9rem;z-index:300;opacity:0;transition:opacity .3s}
+.toast.show{opacity:1}
+
+/* Offline banner */
+#offline-banner{display:none;background:#d4a843;color:#000;text-align:center;padding:4px;font-size:.8rem}
+
+/* Hide on desktop */
+@media(min-width:769px){#reader-content{font-size:18px}}
+@media(max-width:768px){
+  #topbar>div{flex-wrap:wrap}
+  #search-box{order:3;min-width:100%}
+  .hot-grid{grid-template-columns:1fr}
+  #ch-list{grid-template-columns:1fr}
+  #book-meta{flex-direction:column;align-items:center;text-align:center}
+  #reader-content{font-size:17px;padding:0 4px}
+}
+</style>
+</head>
+<body>
+
+<div id="offline-banner">离线模式 - 内容可能不是最新</div>
+
+<!-- Top Bar -->
+<header id="topbar">
+  <div>
+    <a href="#" class="logo" id="logo-btn">00小说网</a>
+    <div id="nav-tabs">
+      <a href="#" data-v="home">首页</a>
+      <a href="#" data-v="cat">分类</a>
+    </div>
+    <div id="search-box">
+      <input type="text" id="search-inp" placeholder="搜书名或作者..." autocomplete="off">
+      <button id="search-btn">搜索</button>
+    </div>
+  </div>
+</header>
+
+<div id="app">
+  <!-- Home -->
+  <div id="v-home" class="view active">
+    <div id="hot-section"><h2>热门推荐</h2><div id="hot-grid" class="hot-grid"></div></div>
+    <div id="latest-section"><h2>强力推荐</h2><ul id="latest-list" class="book-list"></ul></div>
+  </div>
+
+  <!-- Categories -->
+  <div id="v-cat" class="view"><div id="cat-tabs" class="cat-tabs"></div><div id="cat-books" class="book-grid"></div></div>
+
+  <!-- Search -->
+  <div id="v-search" class="view"><a href="#" class="back" data-to="home">返回首页</a><span id="search-info" style="margin-left:12px;font-size:.85rem;color:var(--text2)"></span><div id="search-results" style="margin-top:12px;overflow-x:auto"></div></div>
+
+  <!-- Book -->
+  <div id="v-book" class="view"><a href="#" class="back" data-to="home">返回</a><div id="book-meta"></div><div class="chapter-tool"><input type="text" id="ch-filter" placeholder="搜索章节..."><button id="dl-btn">下载 TXT</button><button id="dl50-btn" class="dark">最新50章</button></div><div id="ch-count"></div><ul id="ch-list" class="chapter-list"></ul></div>
+
+  <!-- Reader -->
+  <div id="v-reader" class="view"><div id="reader-tool"><a href="#" class="back" data-to="book">目录</a><span id="reader-title"></span><button id="prev-btn" class="dark" style="padding:6px 12px;font-size:.85rem">上一章</button><button id="next-btn" class="dark" style="padding:6px 12px;font-size:.85rem">下一章</button><select id="font-sel"><option value="16">16px</option><option value="18" selected>18px</option><option value="20">20px</option><option value="22">22px</option><option value="24">24px</option></select></div><div id="reader-content"></div></div>
+</div>
+
+<!-- Download Modal -->
+<div id="dl-modal" class="modal">
+  <div class="modal-box">
+    <h3>下载 TXT</h3>
+    <label><input type="radio" name="dl-r" value="all" checked> 全部章节</label>
+    <label><input type="radio" name="dl-r" value="l50"> 最新50章</label>
+    <label><input type="radio" name="dl-r" value="l100"> 最新100章</label>
+    <label><input type="radio" name="dl-r" value="cust"> 自定义: <input type="number" id="dl-from" value="1" disabled> - <input type="number" id="dl-to" value="1" disabled></label>
+    <div class="modal-actions"><button id="dl-go">开始下载</button><button id="dl-cancel" class="dark">取消</button></div>
+    <div id="dl-msg" style="margin-top:10px;font-size:.8rem;color:var(--yellow)"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ── CORS Proxy ──
+const PROXY = 'https://corsproxy.io/?';
+const BASE = 'https://www.00shu.la';
+
+async function fetchHTML(url) {
+  try {
+    const resp = await fetch(PROXY + encodeURIComponent(url));
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const html = await resp.text();
+    return new DOMParser().parseFromString(html, 'text/html');
+  } catch(e) {
+    console.error('Fetch error:', e);
+    return null;
+  }
+}
+
+// ── State ──
+const S = {
+  view: 'home',
+  chapters: [],
+  chIdx: 0,
+  bookUrl: '',
+  novelName: '',
+  searchResults: [],
+};
+
+function $(s) { return document.querySelector(s); }
+function $$(s) { return document.querySelectorAll(s); }
+function show(v) {
+  S.view = v;
+  $$('.view').forEach(el => el.classList.remove('active'));
+  $('#v-' + v).classList.add('active');
+  if (v !== 'reader') window.scrollTo(0, 0);
+}
+
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function loading(html) { return `<div class="loading"><div class="spin"></div>${html ? '<p>'+html+'</p>' : ''}</div>`; }
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ── Home ──
+async function loadHome() {
+  show('home');
+  $('#hot-grid').innerHTML = loading('加载热门推荐...');
+  const doc = await fetchHTML(BASE);
+  if (!doc) { $('#hot-grid').innerHTML='<p>加载失败，请检查网络</p>'; return; }
+
+  // Hot
+  let hotHTML = '';
+  doc.querySelectorAll('#hotcontent .item').forEach(item => {
+    const a = item.querySelector('a[href]');
+    const img = item.querySelector('img');
+    const dt = item.querySelector('dt');
+    const dd = item.querySelector('dd');
+    if (!a || !a.href.includes('/book/')) return;
+    const url = a.href.startsWith('http') ? a.href : BASE + a.href;
+    const title = a.textContent.trim();
+    const author = dt?.querySelector('span')?.textContent.trim() || '';
+    const desc = dd?.textContent.trim().slice(0, 100) || '';
+    const cover = img ? (img.src.startsWith('http') ? img.src : (img.src.startsWith('//') ? 'https:'+img.src : BASE + img.src)) : '';
+    hotHTML += `<div class="hot-card" data-url="${esc(url)}">
+      ${cover ? `<img src="${esc(cover)}" alt="" loading="lazy" onerror="this.remove()">` : ''}
+      <div class="info"><h3>${esc(title)}</h3><span class="author">${esc(author)}</span>${desc ? `<p class="desc">${esc(desc)}</p>` : ''}</div>
+    </div>`;
+  });
+  $('#hot-grid').innerHTML = hotHTML || '<p>暂无推荐</p>';
+  $('#hot-grid').querySelectorAll('.hot-card').forEach(c => c.onclick = () => openBook(c.dataset.url));
+
+  // Latest
+  let latestHTML = '';
+  doc.querySelectorAll('.r ul li').forEach(li => {
+    const a = li.querySelector('a[href]');
+    const s5 = li.querySelector('.s5');
+    if (!a) return;
+    const url = a.href.startsWith('http') ? a.href : BASE + a.href;
+    latestHTML += `<li data-url="${esc(url)}"><span>${esc(a.textContent.trim())}</span><span class="s5">${esc(s5?.textContent.trim()||'')}</span></li>`;
+  });
+  $('#latest-list').innerHTML = latestHTML;
+  $('#latest-list').querySelectorAll('li').forEach(li => li.onclick = () => openBook(li.dataset.url));
+}
+
+// ── Categories ──
+const CATS = [
+  {id:'xuanhuan',name:'玄幻奇幻'},{id:'wuxia',name:'武侠仙侠'},{id:'dushi',name:'都市言情'},
+  {id:'lishi',name:'历史军事'},{id:'youxi',name:'游戏竞技'},{id:'kehuan',name:'科幻灵异'},
+];
+
+async function loadCategories(catId) {
+  show('cat');
+  // Tabs
+  $('#cat-tabs').innerHTML = CATS.map(c => `<span class="cat-tab${catId===c.id?' active':''}" data-cat="${c.id}">${c.name}</span>`).join('');
+  $('#cat-tabs').querySelectorAll('.cat-tab').forEach(t => t.onclick = () => loadCatBooks(t.dataset.cat, t));
+
+  if (!catId) { catId = CATS[0].id; $('#cat-tabs .cat-tab').classList.add('active'); }
+  loadCatBooks(catId);
+}
+
+async function loadCatBooks(catId, tabEl) {
+  if (tabEl) {
+    $('#cat-tabs').querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+    tabEl.classList.add('active');
+  }
+  $('#cat-books').innerHTML = loading('加载中...');
+  const doc = await fetchHTML(BASE + '/' + catId + '/');
+  if (!doc) { $('#cat-books').innerHTML='<p>加载失败</p>'; return; }
+  let html = '';
+  const seen = new Set();
+  doc.querySelectorAll('a[href]').forEach(a => {
+    const href = a.href || a.getAttribute('href') || '';
+    const txt = a.textContent.trim();
+    if (/\/\d+\/\d+\//.test(href) && !href.includes('.html') && txt.length > 2 && txt.length < 50) {
+      const url = href.startsWith('http') ? href : BASE + href;
+      if (!seen.has(url)) { seen.add(url); html += `<a href="#" data-url="${esc(url)}">${esc(txt)}</a>`; }
+    }
+  });
+  $('#cat-books').innerHTML = html || '<p>暂无书籍</p>';
+  $('#cat-books').querySelectorAll('a').forEach(a => a.onclick = (e) => { e.preventDefault(); openBook(a.dataset.url); });
+}
+
+// ── Search ──
+async function doSearch(q) {
+  show('search');
+  $('#search-info').textContent = `搜索: "${q}"`;
+  $('#search-results').innerHTML = loading('搜索中...');
+  const doc = await fetchHTML(BASE + '/modules/article/search.php?q=' + encodeURIComponent(q));
+  if (!doc) { $('#search-results').innerHTML='<p>搜索失败</p>'; return; }
+  let rows = '';
+  let count = 0;
+  doc.querySelectorAll('tr#nr').forEach(tr => {
+    const tds = tr.querySelectorAll('td');
+    if (tds.length < 5) return;
+    const a0 = tds[0].querySelector('a');
+    const a1 = tds[1].querySelector('a');
+    if (!a0) return;
+    const url = a0.href.startsWith('http') ? a0.href : BASE + a0.href;
+    const title = a0.textContent.trim();
+    const latest = a1 ? a1.textContent.trim() : '';
+    const author = tds[2]?.textContent.trim() || '未知';
+    const words = tds[3]?.textContent.trim() || '';
+    const update = tds[4]?.textContent.trim() || '';
+    const status = tds[5]?.textContent.trim() || '';
+    const sc = status.includes('完结')||status.includes('完')?'status-done':'status-ongoing';
+    rows += `<tr><td><a href="#" class="tt" data-url="${esc(url)}">${esc(title)}</a></td><td>${esc(latest)}</td><td>${esc(author)}</td><td>${esc(words)}</td><td>${esc(update)}</td><td class="${sc}">${esc(status)}</td></tr>`;
+    count++;
+  });
+  $('#search-info').textContent = `搜索: "${q}" - ${count} 条结果`;
+  $('#search-results').innerHTML = count ? `<table class="result-table"><thead><tr><th>书名</th><th>最新章节</th><th>作者</th><th>字数</th><th>更新</th><th>状态</th></tr></thead><tbody>${rows}</tbody></table>` : '<p>未找到结果</p>';
+  S.searchResults = [];
+  $('#search-results').querySelectorAll('.tt').forEach(a => a.onclick = (e) => { e.preventDefault(); openBook(a.dataset.url); });
+}
+
+// ── Book Detail ──
+async function openBook(url) {
+  show('book');
+  S.bookUrl = url;
+  S.chapters = [];
+  $('#book-meta').innerHTML = loading('加载书籍信息...');
+  $('#ch-list').innerHTML = '';
+  $('#ch-filter').value = '';
+
+  const doc = await fetchHTML(url);
+  if (!doc) { $('#book-meta').innerHTML='<p>加载失败</p>'; return; }
+
+  // Meta
+  const h1 = doc.querySelector('#info h1');
+  S.novelName = h1 ? h1.textContent.trim() : '';
+  let author = '', status = '', lastUpdate = '', desc = '';
+  const infoEl = doc.querySelector('#info');
+  if (infoEl) {
+    const t = infoEl.textContent;
+    const am = t.match(/作者[：:]\s*(\S+)/);
+    if (am) author = am[1];
+    const sm = t.match(/状态[：:]\s*(\S+)/);
+    if (sm) status = sm[1];
+    const um = t.match(/最后更新[：:]\s*([\d\-:\s]+)/);
+    if (um) lastUpdate = um[1].trim();
+  }
+  const intro = doc.querySelector('#intro');
+  if (intro) desc = intro.textContent.replace(/\s+/g,' ').trim().slice(0, 500);
+
+  let cover = '';
+  const img = doc.querySelector('#fmimg img, #sidebar img');
+  if (img) {
+    let src = img.src || img.getAttribute('src') || '';
+    if (src.startsWith('//')) src = 'https:' + src;
+    else if (src.startsWith('/')) src = BASE + src;
+    cover = src;
+  }
+
+  $('#book-meta').innerHTML = `
+    ${cover ? `<img src="${esc(cover)}" alt="" onerror="this.remove()">` : ''}
+    <div class="meta">
+      <h1>${esc(S.novelName || '未知')}</h1>
+      <p>作者: ${esc(author||'未知')} | 状态: ${esc(status||'未知')}</p>
+      ${lastUpdate ? `<p>最后更新: ${esc(lastUpdate)}</p>` : ''}
+      ${desc ? `<p class="desc">${esc(desc)}</p>` : ''}
+    </div>`;
+
+  // Chapters
+  const chapters = [];
+  for (const dl of doc.querySelectorAll('dl')) {
+    const dds = dl.querySelectorAll('dd a[href]');
+    if (dds.length > 10) {
+      dds.forEach(a => {
+        const title = a.textContent.trim();
+        const href = a.href || a.getAttribute('href') || '';
+        if (title && href) {
+          chapters.push({ title, url: href.startsWith('http') ? href : BASE + href });
+        }
+      });
+      break;
+    }
+  }
+
+  if (chapters.length >= 2) {
+    const fn = chapters[0].title.match(/(\d+)/);
+    const ln = chapters[chapters.length-1].title.match(/(\d+)/);
+    if (fn && ln && parseInt(fn[1]) > parseInt(ln[1])) chapters.reverse();
+  }
+
+  S.chapters = chapters;
+  $('#ch-count').textContent = `共 ${chapters.length} 章`;
+  renderChapters(chapters);
+}
+
+function renderChapters(list) {
+  $('#ch-list').innerHTML = list.map((ch, i) => {
+    const idx = S.chapters.indexOf(ch);
+    return `<li><a href="#" data-idx="${idx}">${esc(ch.title)}</a></li>`;
+  }).join('');
+  $('#ch-list').querySelectorAll('a').forEach(a => a.onclick = (e) => { e.preventDefault(); openReader(parseInt(a.dataset.idx)); });
+}
+
+$('#ch-filter').oninput = function() {
+  const q = this.value.trim();
+  const filtered = q ? S.chapters.filter(c => c.title.includes(q)) : S.chapters;
+  $('#ch-count').textContent = q ? `筛选: ${filtered.length} / ${S.chapters.length} 章` : `共 ${S.chapters.length} 章`;
+  renderChapters(filtered);
+};
+
+// ── Reader ──
+async function openReader(idx) {
+  S.chIdx = idx;
+  show('reader');
+  const ch = S.chapters[idx];
+  $('#reader-title').textContent = `第${idx+1}章 ${ch.title}`;
+  const contentDiv = $('#reader-content');
+  contentDiv.innerHTML = loading('加载章节...');
+
+  const doc = await fetchHTML(ch.url);
+  if (!doc) { contentDiv.innerHTML='<p>加载失败</p>'; return; }
+
+  let text = '';
+  for (const sel of ['#content','#contents','.content','.showtxt','#chaptercontent']) {
+    const el = doc.querySelector(sel);
+    if (el) {
+      el.querySelectorAll('script,style,ins,iframe').forEach(j => j.remove());
+      text = el.textContent.replace(/\n{3,}/g,'\n\n').trim();
+      if (text.length > 100) break;
+    }
+  }
+  if (!text || text.length < 50) {
+    for (const div of doc.querySelectorAll('div')) {
+      const t = div.textContent.replace(/\n{3,}/g,'\n\n').trim();
+      if (t.length > 200 && t.length < 100000) { text = t; break; }
+    }
+  }
+  text = text.replace(/.*?(?:最新网址|记住本站|一秒记住|手机阅读|无弹窗).*?\n?/g,'').replace(/https?:\/\/\S+/g,'');
+
+  const fs = $('#font-sel').value;
+  contentDiv.innerHTML = `<div style="font-size:${fs}px;line-height:2.1">${esc(text).replace(/\n/g,'<br>')}</div>`;
+  window.scrollTo(0,0);
+}
+
+$('#font-sel').onchange = () => {
+  const d = $('#reader-content>div');
+  if (d) d.style.fontSize = $('#font-sel').value + 'px';
+};
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (S.view !== 'reader') return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); if (S.chIdx < S.chapters.length-1) openReader(S.chIdx+1); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); if (S.chIdx > 0) openReader(S.chIdx-1); }
+  else if (e.key === 'Escape') show('book');
+});
+
+$('#prev-btn').onclick = () => { if (S.chIdx > 0) openReader(S.chIdx-1); };
+$('#next-btn').onclick = () => { if (S.chIdx < S.chapters.length-1) openReader(S.chIdx+1); };
+
+// Swap gesture for mobile
+let tsX = 0;
+document.addEventListener('touchstart', e => { if (S.view==='reader') tsX = e.touches[0].clientX; });
+document.addEventListener('touchend', e => {
+  if (S.view !== 'reader') return;
+  const dx = e.changedTouches[0].clientX - tsX;
+  if (Math.abs(dx) > 80) {
+    if (dx < 0 && S.chIdx < S.chapters.length-1) openReader(S.chIdx+1);
+    else if (dx > 0 && S.chIdx > 0) openReader(S.chIdx-1);
+  }
+});
+
+// ── Download ──
+$('#dl-btn').onclick = () => showDLModal();
+$('#dl50-btn').onclick = () => doDownload('l50');
+
+function showDLModal() {
+  $('#dl-modal').classList.add('show');
+  $('#dl-msg').textContent = '';
+  document.querySelector('input[name="dl-r"][value="all"]').checked = true;
+  $('#dl-from,#dl-to').disabled = true;
+  $('#dl-to').value = S.chapters.length;
+}
+
+$('#dl-cancel').onclick = () => $('#dl-modal').classList.remove('show');
+
+$$('input[name="dl-r"]').forEach(r => r.onchange = () => {
+  const cust = r.value === 'cust';
+  $('#dl-from,#dl-to').disabled = !cust;
+});
+
+$('#dl-go').onclick = () => {
+  const range = document.querySelector('input[name="dl-r"]:checked').value;
+  if (range === 'cust') {
+    const from = parseInt($('#dl-from').value) || 1;
+    const to = parseInt($('#dl-to').value) || S.chapters.length;
+    doDownload('cust', from, to);
+  } else {
+    doDownload(range);
+  }
+};
+
+async function doDownload(range, from, to) {
+  const msg = $('#dl-msg');
+  msg.textContent = '正在准备下载...';
+  let chapters = [];
+  if (range === 'l50') chapters = S.chapters.slice(-50);
+  else if (range === 'l100') chapters = S.chapters.slice(-100);
+  else if (range === 'cust') chapters = S.chapters.slice(from-1, to);
+  else chapters = S.chapters;
+
+  if (!chapters.length) { msg.textContent = '没有章节可下载'; return; }
+
+  // Build TXT
+  let txt = `《${S.novelName}》\n共 ${chapters.length} 章\n\n============================================================\n\n`;
+  let done = 0;
+
+  for (let i = 0; i < chapters.length; i++) {
+    const ch = chapters[i];
+    txt += `\n第${i+1}章  ${ch.title}\n\n`;
+    const doc = await fetchHTML(ch.url);
+    if (doc) {
+      let text = '';
+      for (const sel of ['#content','#contents','.content','.showtxt']) {
+        const el = doc.querySelector(sel);
+        if (el) {
+          el.querySelectorAll('script,style,ins,iframe').forEach(j => j.remove());
+          text = el.textContent.trim();
+          if (text.length > 100) break;
+        }
+      }
+      text = text.replace(/.*?(?:最新网址|记住本站|一秒记住|手机阅读|无弹窗).*?\n?/g,'').replace(/https?:\/\/\S+/g,'');
+      txt += text + '\n\n----------------------------------------\n';
+    } else {
+      txt += '[下载失败]\n\n----------------------------------------\n';
+    }
+    done++;
+    if (done % 5 === 0) msg.textContent = `正在下载: ${done}/${chapters.length}...`;
+    await new Promise(r => setTimeout(r, 200));
+  }
+
+  const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (S.novelName||'小说') + '.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  msg.textContent = `下载完成! ${done}/${chapters.length} 章`;
+  setTimeout(() => $('#dl-modal').classList.remove('show'), 1500);
+}
+
+// ── Navigation ──
+$$('.back').forEach(b => b.onclick = (e) => {
+  e.preventDefault();
+  const to = b.dataset.to;
+  if (to === 'home') show('home');
+  else if (to === 'book') show('book');
+});
+
+$$('#nav-tabs a').forEach(a => a.onclick = (e) => {
+  e.preventDefault();
+  const v = a.dataset.v;
+  if (v === 'home') loadHome();
+  else if (v === 'cat') loadCategories();
+});
+
+$('#logo-btn').onclick = (e) => { e.preventDefault(); loadHome(); };
+
+$('#search-btn').onclick = () => {
+  const q = $('#search-inp').value.trim();
+  if (q.length >= 2) doSearch(q);
+};
+$('#search-inp').onkeydown = (e) => {
+  if (e.key === 'Enter') { const q = e.target.value.trim(); if (q.length >= 2) doSearch(q); }
+};
+
+// ── PWA ──
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+
+// Offline detection
+window.addEventListener('online', () => $('#offline-banner').style.display = 'none');
+window.addEventListener('offline', () => $('#offline-banner').style.display = 'block');
+
+// ── Init ──
+loadHome();
+</script>
+</body>
+</html>

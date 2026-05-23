@@ -1,0 +1,24 @@
+{
+  "name": "00小说网 - 免费小说阅读",
+  "short_name": "00小说网",
+  "description": "免费小说搜索、阅读、下载",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0f0f14",
+  "theme_color": "#0f0f14",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["books", "entertainment"],
+  "lang": "zh-CN"
+}
